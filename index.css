@@ -35,8 +35,11 @@
 
 /* search-container css */
 
-.search{
-  padding: 10px;
+.filter{
+  padding: 10px; 
+}
+.filter-btn{
+  cursor: pointer;
 }
 
 /* restaurant-card css */
