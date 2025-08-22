@@ -10,7 +10,6 @@ const RestaurantCard = (props) => {
     costForTwo,
     avgRating,
     sla,
-    deliveryTime,
     totalRatingsString,
   } = resData;
 
@@ -26,8 +25,8 @@ const RestaurantCard = (props) => {
       <h3>
         {costForTwo} ({totalRatingsString})
       </h3>
-      <h3>{avgRating}</h3>
-      <h3>{sla.deliveryTime} mins</h3>
+      <h3>{avgRating}⭐</h3>
+      <h3>{sla.slaString} </h3>
     </div>
   );
 };

@@ -1,62 +1,67 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import RestaurantCard from "./RestaurantCard";
-import { resList } from "../utils/mockData";
-
-
-//   {
-//     id: "594685",
-//     name: "Chinese Wok",
-//     cloudinaryImageId: "e0839ff574213e6f35b3899ebf1fc597",
-//     locality: "Gautam Buddha Nagar",
-//     areaName: "Sector 110",
-//     costForTwo: "₹250 for two",
-//     cuisines: ["Chinese", "Asian", "Tibetan", "Desserts"],
-//     avgRating: 3.9,
-//     parentId: "61955",
-//     avgRatingString: "3.9",
-//     totalRatingsString: "1.8K+",
-//     sla: {
-//       deliveryTime: 49,
-//       lastMileTravel: 3.9,
-//       serviceability: "SERVICEABLE",
-//       slaString: "45-50 mins",
-//       lastMileTravelString: "3.9 km",
-//       iconType: "ICON_TYPE_EMPTY",
-//     },
-//   },
-//   {
-//     id: "355000",
-//     name: "Pizza Hut",
-//     cloudinaryImageId:
-//       "RX_THUMBNAIL/IMAGES/VENDOR/2025/6/9/21d82657-b8e5-4829-8d89-045b4576fdef_355000.JPG",
-//     locality: "KM Block",
-//     areaName: "Hajipur",
-//     costForTwo: "₹350 for two",
-//     cuisines: ["Pizzas"],
-//     avgRating: 4.1,
-//     parentId: "721",
-//     avgRatingString: "4.1",
-//     totalRatingsString: "3.2K+",
-//     sla: {
-//       deliveryTime: 49,
-//       lastMileTravel: 2.3,
-//       serviceability: "SERVICEABLE",
-//       slaString: "45-50 mins",
-//       lastMileTravelString: "2.3 km",
-//       iconType: "ICON_TYPE_EMPTY",
-//     },
-//   },
-// ];
-
+import Shimmer from "./Shimmer";
+import { Link } from "react-router-dom";
+import useOnlineStatus from "../utils/useOnlineStatus";
 const Body = () => {
-  const [listOfRestaurants, setListOfRestaurants] = useState(resList);
-  return (
+  const [listOfRestaurants, setListOfRestaurants] = useState([]);
+  const [filteredRestaurant, setFilteredRestaurant] = useState([]); //copy of all the restautrats like above plus it will hold the restaurants based on searched restaurant
+  const [searchText, setSearchText] = useState("");
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    const data = await fetch(
+      "https://swiggy-api-4c740.web.app/swiggy-api.json"
+    );
+    const json = await data.json();
+    const restaurantsArray =
+      json?.data?.cards[1]?.card.card?.gridElements?.infoWithStyle?.restaurants;
+    // console.log(restaurantsArray);
+    const restaurantInfoArray = restaurantsArray.map((r) => r.info);
+    // console.log(restaurantInfoArray);
+    setListOfRestaurants(restaurantInfoArray);
+    setFilteredRestaurant(restaurantInfoArray); //copy of all the restautrats plus it will hold the restaurants based on searched restaurant
+  };
+
+  const onlineStatus = useOnlineStatus();
+
+  if (onlineStatus === false) {
+    return <h1>Looks like there u have no internet connection!!</h1>;
+  }
+
+  return listOfRestaurants.length === 0 ? (
+    <Shimmer />
+  ) : (
     <div className="body">
       <div className="filter">
+        <div className="search">
+          <input
+            type="text"
+            className="search-box"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+          />
+          <button
+            className="search-btn"
+            onClick={() => {
+              const filteredResList = listOfRestaurants.filter((res) =>
+                res.name.toLowerCase().includes(searchText.toLowerCase())
+              );
+              setFilteredRestaurant(filteredResList);
+            }}
+          >
+            Search
+          </button>
+        </div>
         <button
           className="filter-btn"
           onClick={() => {
-            const filteredList = listOfRestaurants.filter((res) => res.avgRating > 4);
+            const filteredList = listOfRestaurants.filter(
+              (res) => res.avgRating > 4
+            );
             setListOfRestaurants(filteredList);
           }}
         >
@@ -64,8 +69,11 @@ const Body = () => {
         </button>
       </div>
       <div className="res-container">
-        {listOfRestaurants.map((restaurant) => (
-          <RestaurantCard key={restaurant.id} resData={restaurant} />
+        {filteredRestaurant.map((restaurant) => (
+          <Link key={restaurant.id} to={"/restaurants/" + restaurant.id}>
+            {" "}
+            <RestaurantCard resData={restaurant} />
+          </Link>
         ))}
       </div>
     </div>
